@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG BASED CHATBOT</title>
+    <!-- <style rel="stylesheet" href="static/style.css"> -->
+      <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    background-color: #ffffff;
+    flex-direction: column;
+    align-items: center;
+}
+h1 {
+    margin-top: 13px;
+    font-family: 'Segoe UI', Tahoma,Verdana, sans-serif;
+}
+#questionForm {
+    margin-top: 2px;
+    padding: 10px;
+    background-color: #ffffff; 
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#pdfInput {
+    margin-bottom: 10 px;
+    padding: 10px;
+    border: 1px solid #ccc; 
+    border-radius: 5px;
+}
+#questionInput {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+#submitBtn {
+    background-color: #4CAF50; 
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+#submitBtn:hover {
+    background-color: #45a049; 
+}
+#answerDisplay {
+    margin-top: 20px;
+    font-weight: bold;
+}
+#pdfViewer {
+    margin-top: 10px;
+}
+#pdfEmbed {
+    width: 900px; 
+    height: 500px; 
+}
+
+      </style>
+    
+</head>
+<body>
+    <h1>RAG BASED CHATBOT With Highlighted Answer in the PDF Viewer</h1>
+
+     <!-- Question Form -->
+    <form id="questionForm">
+        <input type="file" id="pdfInput" name="pdfFile" accept=".pdf" required>
+        <textarea id="questionInput" name="question" rows="4" cols="50" placeholder="Enter your question..." required></textarea>
+        <button type="submit">Submit Question</button>
+    </form>
+    <div id="answerDisplay"></div>
+    
+    <div id="pdfViewer">
+        
+        <embed id="pdfEmbed" src="" type="application/pdf" width="80%" height="450px" />
+    </div>
+
+    <script>
+        document.getElementById('questionForm').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+
+            let formData = new FormData();
+            formData.append('pdfFile', document.getElementById('pdfInput').files[0]);
+            formData.append('question', document.getElementById('questionInput').value);
+
+            fetch('/process_query', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Network response was not ok.');
+            })
+            .then(data => {
+                console.log(data);
+                // Displaying answer
+                document.getElementById('answerDisplay').innerHTML = `<p>Answer: ${data.answer}</p>`;
+
+                // Displaying processed pdf
+                let pdfViewer = document.getElementById('pdfEmbed');
+                pdfViewer.setAttribute('src', data.processed_pdf_url);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
